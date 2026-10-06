@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import SalesPage from './pages/SalesPage';
 import ThankYouPage from './pages/ThankYouPage';
 import ToastNotification from './components/ToastNotification';
+import CheckoutModal from './components/CheckoutModal';
 
 export default function App() {
   const [currentPage, setCurrentPage] = useState(() => {
@@ -48,6 +49,7 @@ export default function App() {
   return (
     <div className="bg-slate-950 min-h-screen text-slate-100 font-sans">
       <ToastNotification />
+      <CheckoutModal />
       {currentPage === 'thank-you' ? (
         <ThankYouPage onNavigateHome={navigateToHome} />
       ) : (

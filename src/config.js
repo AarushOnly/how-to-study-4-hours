@@ -46,7 +46,7 @@ export const EBOOK_DOWNLOAD_URL = "./How_to_Study_4_Hours_Without_Distraction.pd
 /**
  * 3. SUPPORT_EMAIL & RESPONSE TIME
  */
-export const SUPPORT_EMAIL = "deepfocusacademy@gmail.com";
+export const SUPPORT_EMAIL = "integral7535@gmail.com";
 export const RESPONSE_TIME = "Within 24 hours";
 
 /**

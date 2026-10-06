@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { ArrowRight, Send, ShieldAlert, Clock, Check } from 'lucide-react';
-import { PAYMENT_URL, DM_HANDLE, RESPONSE_TIME } from '../config';
+import { PAYMENT_URL, RESPONSE_TIME } from '../config';
 import { buyNow } from '../utils/buy';
 
 export default function CTAButton({ 
@@ -44,7 +44,7 @@ export default function CTAButton({
           {clicked ? (
             <>
               <Check className="w-4 h-4 text-slate-950 stroke-[3]" />
-              <span>OPENING INSTAGRAM DM...</span>
+              <span>OPENING PAYMENT...</span>
             </>
           ) : (
             <>
@@ -60,7 +60,7 @@ export default function CTAButton({
         </span>
       </a>
 
-      {/* Response time & DM subtext */}
+      {/* Response time & delivery subtext */}
       {showSubtext && (
         subtext ? (
           <span className="text-xs text-slate-400 mt-2 font-medium tracking-wide text-center">
@@ -69,7 +69,7 @@ export default function CTAButton({
         ) : (
           <div className="flex items-center gap-1.5 text-xs text-slate-400 mt-2 font-medium">
             <Clock className="w-3 h-3 text-amber-400 shrink-0" />
-            <span>Opens DM @{DM_HANDLE} with pre-typed message • Replies {RESPONSE_TIME.toLowerCase()}</span>
+            <span>Delivery to your WhatsApp • Verified within {RESPONSE_TIME.toLowerCase()}</span>
           </div>
         )
       )}
