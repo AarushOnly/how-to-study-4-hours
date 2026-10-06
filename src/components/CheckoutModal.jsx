@@ -278,17 +278,17 @@ export default function CheckoutModal() {
               </button>
             </div>
 
-            {/* THE REQUESTED "PAYMENT DONE" BUTTON */}
+            {/* THE REQUESTED "CLICK HERE WHEN PAYMENT DONE" BUTTON */}
             <div className="space-y-2">
               <button
                 onClick={handlePaymentDone}
-                className="w-full py-4 px-6 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-base uppercase tracking-wide shadow-xl shadow-emerald-500/25 active:scale-95 transition-all flex items-center justify-center gap-2 cursor-pointer border border-emerald-400/40"
+                className="w-full py-4 px-6 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-sm sm:text-base uppercase tracking-wide shadow-xl shadow-emerald-500/25 active:scale-95 transition-all flex items-center justify-center gap-2 cursor-pointer border border-emerald-400/40"
               >
                 <CheckCircle2 className="w-5 h-5 stroke-[2.5]" />
-                <span>PAYMENT DONE</span>
+                <span>CLICK HERE WHEN PAYMENT DONE</span>
               </button>
               <p className="text-[11px] text-slate-400 text-center font-medium">
-                Click "PAYMENT DONE" right after sending ₹59 from your UPI app.
+                Click here right after sending ₹59 from your UPI app.
               </p>
             </div>
           </div>

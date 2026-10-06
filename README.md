@@ -29,7 +29,7 @@ The website is live and hosted on **GitHub Pages**:
 ## 🛒 Customer Ordering Flow
 1. **WhatsApp Capture:** User enters their 10-digit WhatsApp mobile number (+91).
 2. **UPI Payment:** User scans the QR code or taps to pay ₹59 using Google Pay, PhonePe, Paytm, or BHIM.
-3. **Payment Done:** User taps **"PAYMENT DONE"** to submit their order.
+3. **Payment Done:** User taps **"CLICK HERE WHEN PAYMENT DONE"** to submit their order.
 4. **Delivery & Notice:** Confirmation is displayed with the 24-hour delivery window. If needed, users can contact `integral7535@gmail.com` or `@deepfocusacademy` on Instagram.
 
 ---
