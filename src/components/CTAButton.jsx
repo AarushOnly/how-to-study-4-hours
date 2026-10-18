@@ -39,6 +39,11 @@ export default function CTAButton({
         className={`${baseStyles} ${variants[variant] || variants.primary} ${className}`}
         target="_blank"
         rel="noopener noreferrer"
+        data-youpi-pay=""
+        data-order-id="EBOOK-4HRS"
+        data-amount="59.00"
+        data-currency="INR"
+        data-vpa="aarushydv@fam"
       >
         <span className="flex items-center gap-2">
           {clicked ? (

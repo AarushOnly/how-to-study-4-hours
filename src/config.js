@@ -63,7 +63,27 @@ export const UPI_SUPPORT = {
   name: "Aarush Yadav",
   upiId: "aarushydv@fam",
   qrImage: "./images/upi-qr.png",
-  apps: ["Google Pay", "PhonePe", "PayTM", "BHIM UPI", "Amazon Pay"]
+  apps: ["Google Pay", "PhonePe", "PayTM", "BHIM UPI", "CRED", "FamPay"]
+};
+
+/**
+ * 6. YOUPI-PG PAYMENT GATEWAY INTEGRATION
+ * Self-Hosted UPI Gateway (0% Platform Fee, Direct P2P Bank Settlement)
+ * Reference: https://github.com/youpi-pg/YouPI-PG
+ */
+export const YOUPI_CONFIG = {
+  name: "YouPI PG V2",
+  version: "2.0.0",
+  // If user hosts a YouPI Node.js server (e.g., on Render, Railway, VPS), set the endpoint here:
+  gatewayApiUrl: "https://pay.deepfocusacademy.com",
+  merchantVpa: "aarushydv@fam",
+  payeeName: "AARUSH YADAV",
+  amount: 59,
+  currency: "INR",
+  note: "Deep Focus 4 Hours Ebook",
+  sessionSeconds: 300, // 5:00 payment countdown
+  verifySeconds: 30,   // 30s observer verification
+  settlement: "Direct P2P Instant Settlement (0% Gateway Fee)"
 };
 
 // Brand and metadata
@@ -74,3 +94,4 @@ export const BRAND_INFO = {
   bookSubtitle: "The Real-World System for Indian Students to Build Rocket-Solid Concentration, Master Tough Syllabi, and Stop Wasting Time on Screen Loops",
   copyrightYear: "2026",
 };
+

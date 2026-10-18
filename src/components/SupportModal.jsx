@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
-import { X, Heart, Copy, Check, ExternalLink } from 'lucide-react';
+import { X, Heart, Copy, Check, ExternalLink, QrCode } from 'lucide-react';
+import { QRCodeSVG } from 'qrcode.react';
 import { UPI_SUPPORT } from '../config';
 import { isMobileDevice, getUpiDeepLink } from '../utils/device';
 
 export default function SupportModal({ isOpen, onClose }) {
   const [copied, setCopied] = useState(false);
+  const [qrMode, setQrMode] = useState('vector'); // 'vector' | 'card'
   const isMobile = isMobileDevice();
 
   if (!isOpen) return null;
@@ -15,8 +17,10 @@ export default function SupportModal({ isOpen, onClose }) {
     setTimeout(() => setCopied(false), 2500);
   };
 
+  const supportUpiUri = getUpiDeepLink('', 'Support Deep Focus Student Academy');
+
   const handleDirectUpiPay = () => {
-    window.location.href = getUpiDeepLink();
+    window.location.href = supportUpiUri;
   };
 
   return (
@@ -41,15 +45,15 @@ export default function SupportModal({ isOpen, onClose }) {
         <h3 className="text-xl sm:text-2xl font-extrabold text-white mb-1">
           {isMobile ? "Pay / Support via UPI" : "Scan QR to Support"}
         </h3>
-        <p className="text-xs text-slate-300 mb-5 leading-relaxed">
+        <p className="text-xs text-slate-300 mb-4 leading-relaxed">
           {isMobile 
-            ? "Tap below to launch your phone's UPI app (Google Pay, PhonePe, Paytm, BHIM) or copy the UPI ID." 
+            ? "Tap below to launch your phone's UPI app (Google Pay, PhonePe, Paytm, BHIM) or scan/copy the UPI ID." 
             : "Scan this UPI QR code using any payment app on your smartphone to support independent student productivity research."}
         </p>
 
         {/* Mobile Direct Action Button */}
         {isMobile && (
-          <div className="mb-5">
+          <div className="mb-4">
             <button
               onClick={handleDirectUpiPay}
               className="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-amber-400 via-amber-300 to-yellow-400 text-slate-950 font-black text-sm sm:text-base uppercase tracking-wide shadow-lg shadow-amber-400/20 hover:shadow-amber-400/30 active:scale-95 transition-all flex items-center justify-center gap-2 cursor-pointer"
@@ -63,13 +67,56 @@ export default function SupportModal({ isOpen, onClose }) {
           </div>
         )}
 
+        {/* QR Mode Toggle */}
+        <div className="flex items-center justify-center gap-2 mb-3">
+          <button
+            type="button"
+            onClick={() => setQrMode('vector')}
+            className={`px-3 py-1 rounded-lg text-[11px] font-mono font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+              qrMode === 'vector'
+                ? 'bg-amber-400 text-slate-950 shadow'
+                : 'bg-slate-950 text-slate-400 hover:text-white border border-slate-800'
+            }`}
+          >
+            <QrCode className="w-3.5 h-3.5" />
+            <span>Dynamic Vector QR</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setQrMode('card')}
+            className={`px-3 py-1 rounded-lg text-[11px] font-mono font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+              qrMode === 'card'
+                ? 'bg-amber-400 text-slate-950 shadow'
+                : 'bg-slate-950 text-slate-400 hover:text-white border border-slate-800'
+            }`}
+          >
+            <span>FamPay Card QR</span>
+          </button>
+        </div>
+
         {/* QR Code Container */}
-        <div className="relative mx-auto max-w-[240px] sm:max-w-[260px] p-3 rounded-2xl bg-white shadow-xl mb-4 border-2 border-amber-400/30">
-          <img 
-            src={UPI_SUPPORT.qrImage} 
-            alt="UPI QR Code - Aarush Yadav" 
-            className="w-full h-auto object-contain rounded-xl"
-          />
+        <div className="relative mx-auto max-w-[240px] sm:max-w-[260px] p-3 rounded-2xl bg-white shadow-xl mb-4 border-2 border-amber-400/30 flex flex-col items-center justify-center min-h-[220px]">
+          {qrMode === 'vector' ? (
+            <div className="flex flex-col items-center">
+              <QRCodeSVG 
+                value={supportUpiUri}
+                size={190}
+                level="Q"
+                bgColor="#ffffff"
+                fgColor="#020617"
+                includeMargin={false}
+              />
+              <span className="mt-2 text-[10px] font-mono font-bold text-slate-700 uppercase tracking-wider">
+                Scan with any UPI App
+              </span>
+            </div>
+          ) : (
+            <img 
+              src={UPI_SUPPORT.qrImage} 
+              alt={`UPI QR Code - ${UPI_SUPPORT.name}`} 
+              className="w-full h-auto object-contain rounded-xl"
+            />
+          )}
         </div>
 
         {/* UPI Details & Copy Box */}

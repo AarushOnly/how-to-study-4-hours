@@ -26,11 +26,20 @@ The website is live and hosted on **GitHub Pages**:
 
 ---
 
-## 🛒 Customer Ordering Flow
-1. **WhatsApp Capture:** User enters their 10-digit WhatsApp mobile number (+91).
-2. **UPI Payment:** User scans the QR code or taps to pay ₹59 using Google Pay, PhonePe, Paytm, or BHIM.
-3. **Payment Done:** User taps **"CLICK HERE WHEN PAYMENT DONE"** to submit their order.
-4. **Delivery & Notice:** Confirmation is displayed with the 24-hour delivery window. If needed, users can contact `integral7535@gmail.com` or `@deepfocusacademy` on Instagram.
+## 🛒 Customer Ordering Flow (YouPI-PG V2 Powered)
+1. **WhatsApp Capture:** User enters their 10-digit WhatsApp mobile number (+91) for delivery.
+2. **YouPI Dynamic UPI Payment:** Generates real-time vector QR code and 1-tap mobile drawer for Google Pay, PhonePe, Paytm, CRED, and BHIM routing directly to `aarushydv@fam` (0% platform fees).
+3. **Session Countdown:** 05:00 active session timer matching YouPI standards.
+4. **Payment Done:** User taps **"CLICK HERE WHEN PAYMENT DONE"** with optional UTR number.
+5. **Delivery & Notice:** Confirmation is displayed with the 24-hour delivery window. If needed, users can contact `integral7535@gmail.com` or `@deepfocusacademy` on Instagram.
+
+---
+
+## ⚡ Payment Gateway Integration
+* **Gateway:** [YouPI-PG V2](https://github.com/youpi-pg/YouPI-PG)
+* **VPA / UPI ID:** `aarushydv@fam` (Aarush Yadav)
+* **Platform Fees:** 0% (Direct P2P Bank Settlement)
+* **Setup Guide:** See [`YOUPI_SETUP_GUIDE.md`](./YOUPI_SETUP_GUIDE.md)
 
 ---
 

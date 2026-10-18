@@ -17,17 +17,20 @@ export const isMobileDevice = () => {
 };
 
 /**
- * Builds the standard BHIM UPI deep link URI
+ * Builds the standard BHIM UPI deep link URI (compatible with NPCI and YouPI-PG standard)
  */
-export const getUpiDeepLink = (amount = '') => {
+export const getUpiDeepLink = (amount = '', note = 'Deep Focus 4 Hours Ebook', orderRef = '') => {
   const params = new URLSearchParams({
     pa: UPI_SUPPORT.upiId,
     pn: UPI_SUPPORT.name,
     cu: 'INR',
-    tn: 'Support Deep Focus Student Academy'
+    tn: note || 'Deep Focus 4 Hours Ebook'
   });
   if (amount) {
     params.append('am', amount);
+  }
+  if (orderRef) {
+    params.append('tr', orderRef);
   }
   return `upi://pay?${params.toString()}`;
 };

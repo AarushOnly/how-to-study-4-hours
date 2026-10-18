@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   X, 
   CheckCircle2, 
@@ -12,11 +12,16 @@ import {
   Clock, 
   BookOpen, 
   ArrowLeft,
-  MessageCircle
+  MessageCircle,
+  QrCode,
+  ShieldCheck,
+  Zap
 } from 'lucide-react';
+import { QRCodeSVG } from 'qrcode.react';
 import { 
   BOOK_PRICE, 
   UPI_SUPPORT, 
+  YOUPI_CONFIG,
   DM_HANDLE, 
   SUPPORT_EMAIL 
 } from '../config';
@@ -27,19 +32,50 @@ export default function CheckoutModal() {
   const [step, setStep] = useState('whatsapp'); // 'whatsapp' | 'payment' | 'done'
   const [whatsappNumber, setWhatsappNumber] = useState('');
   const [studentName, setStudentName] = useState('');
+  const [utrNumber, setUtrNumber] = useState('');
   const [error, setError] = useState('');
   const [copied, setCopied] = useState(false);
+  const [qrMode, setQrMode] = useState('vector'); // 'vector' | 'card'
+  const [orderId, setOrderId] = useState('');
+  
+  // YouPI-PG Dual Countdown Timer (5:00 session)
+  const [timeLeft, setTimeLeft] = useState(YOUPI_CONFIG.sessionSeconds || 300);
+  const timerRef = useRef(null);
 
   useEffect(() => {
     const handleOpenCheckout = () => {
+      const newOrderId = `YOUPI-${Date.now().toString().slice(-6)}`;
+      setOrderId(newOrderId);
       setStep('whatsapp');
       setError('');
+      setTimeLeft(YOUPI_CONFIG.sessionSeconds || 300);
       setIsOpen(true);
     };
 
     window.addEventListener('ebook:open-checkout', handleOpenCheckout);
     return () => window.removeEventListener('ebook:open-checkout', handleOpenCheckout);
   }, []);
+
+  // Timer countdown while in payment step
+  useEffect(() => {
+    if (isOpen && step === 'payment') {
+      timerRef.current = setInterval(() => {
+        setTimeLeft((prev) => {
+          if (prev <= 1) {
+            clearInterval(timerRef.current);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    } else {
+      if (timerRef.current) clearInterval(timerRef.current);
+    }
+
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+    };
+  }, [isOpen, step]);
 
   if (!isOpen) return null;
 
@@ -51,22 +87,44 @@ export default function CheckoutModal() {
       return;
     }
     setError('');
+    setTimeLeft(YOUPI_CONFIG.sessionSeconds || 300);
     setStep('payment');
   };
 
   const handleCopyUPI = () => {
-    navigator.clipboard.writeText(UPI_SUPPORT.upiId);
+    navigator.clipboard.writeText(YOUPI_CONFIG.merchantVpa);
     setCopied(true);
     setTimeout(() => setCopied(false), 2500);
   };
 
   const handlePaymentDone = () => {
+    // Notify window listeners of YouPI payment submission
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('youpi:payment:done', {
+        detail: {
+          orderId,
+          amount: BOOK_PRICE.amount,
+          vpa: YOUPI_CONFIG.merchantVpa,
+          whatsapp: whatsappNumber,
+          utr: utrNumber
+        }
+      }));
+    }
     setStep('done');
   };
 
-  const handleMobileUpiPay = () => {
-    const link = getUpiDeepLink(BOOK_PRICE.amount.toString());
-    window.location.href = link;
+  const dynamicUpiUri = getUpiDeepLink(
+    BOOK_PRICE.amount.toString(),
+    YOUPI_CONFIG.note,
+    orderId
+  );
+
+  const handleMobileUpiPay = (appScheme = '') => {
+    if (appScheme) {
+      window.location.href = `${appScheme}://upi/pay?${dynamicUpiUri.replace('upi://pay?', '')}`;
+    } else {
+      window.location.href = dynamicUpiUri;
+    }
   };
 
   const closeModal = () => {
@@ -74,9 +132,16 @@ export default function CheckoutModal() {
     setError('');
   };
 
+  // Format time mm:ss
+  const minutes = Math.floor(timeLeft / 60);
+  const seconds = timeLeft % 60;
+  const formattedTime = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+  const timerPercentage = ((timeLeft / (YOUPI_CONFIG.sessionSeconds || 300)) * 100);
+
   // Pre-filled confirmation text for WhatsApp / Instagram / Email
   const cleanPhone = whatsappNumber.replace(/\D/g, '');
-  const confirmationMessage = `Hi! I have paid ₹59 for the 'How to Study 4 Hours' ebook. My WhatsApp number is +91 ${cleanPhone}. Please send my PDF!`;
+  const utrSnippet = utrNumber.trim() ? ` (UTR/Ref: ${utrNumber.trim()})` : '';
+  const confirmationMessage = `Hi! I have paid ₹59 for the 'How to Study 4 Hours' ebook via YouPI (to ${YOUPI_CONFIG.merchantVpa})${utrSnippet}. My WhatsApp number is +91 ${cleanPhone}. Please send my PDF!`;
   const instagramDmUrl = `https://ig.me/m/${DM_HANDLE}?text=${encodeURIComponent(confirmationMessage)}`;
   const emailUrl = `mailto:${SUPPORT_EMAIL}?subject=Ebook%20Payment%20Done%20-%20WhatsApp%20+91%20${cleanPhone}&body=${encodeURIComponent(confirmationMessage)}`;
 
@@ -87,11 +152,25 @@ export default function CheckoutModal() {
         {/* Close Button */}
         <button
           onClick={closeModal}
-          className="absolute top-4 right-4 p-2 rounded-xl bg-slate-800 text-slate-400 hover:text-white hover:bg-slate-700 transition-colors cursor-pointer"
+          className="absolute top-4 right-4 p-2 rounded-xl bg-slate-800 text-slate-400 hover:text-white hover:bg-slate-700 transition-colors cursor-pointer z-10"
           aria-label="Close checkout"
         >
           <X className="w-5 h-5" />
         </button>
+
+        {/* YouPI Gateway Branding Pill */}
+        <div className="flex items-center gap-2 mb-4">
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-mono font-black uppercase tracking-wider bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
+            <Zap className="w-3 h-3 text-emerald-400 fill-emerald-400" />
+            <span>YOUPI PG V2</span>
+            <span className="text-slate-500">•</span>
+            <span>0% FEES DIRECT P2P</span>
+          </span>
+          <span className="inline-flex items-center gap-1 text-[10px] font-mono text-slate-400">
+            <ShieldCheck className="w-3 h-3 text-amber-400" />
+            <span>Direct to {YOUPI_CONFIG.merchantVpa}</span>
+          </span>
+        </div>
 
         {/* STEP 1: WhatsApp Number Capture */}
         {step === 'whatsapp' && (
@@ -101,7 +180,7 @@ export default function CheckoutModal() {
                 1
               </span>
               <span className="text-xs font-mono font-bold uppercase tracking-wider text-amber-400">
-                Step 1 of 2 • Ebook Delivery Destination
+                Step 1 of 2 • Delivery Destination
               </span>
             </div>
 
@@ -109,7 +188,7 @@ export default function CheckoutModal() {
               Where should we send your ebook?
             </h3>
             <p className="text-xs sm:text-sm text-slate-300 mb-6 leading-relaxed">
-              Your 43-page PDF guide, 8 bonus hacks, and printable wall trackers will be sent directly to your WhatsApp number within 24 hours.
+              Your 43-page PDF guide, 8 bonus hacks, and printable wall trackers will be delivered directly to your WhatsApp number within 24 hours.
             </p>
 
             <form onSubmit={handleWhatsappSubmit} className="space-y-4">
@@ -183,7 +262,7 @@ export default function CheckoutModal() {
           </div>
         )}
 
-        {/* STEP 2: UPI QR Payment Screen */}
+        {/* STEP 2: YouPI Dynamic UPI Payment Screen */}
         {step === 'payment' && (
           <div>
             <div className="flex items-center justify-between mb-3">
@@ -192,7 +271,7 @@ export default function CheckoutModal() {
                   2
                 </span>
                 <span className="text-xs font-mono font-bold uppercase tracking-wider text-amber-400">
-                  Step 2 of 2 • Scan & Pay
+                  Step 2 of 2 • YouPI Secure Pay
                 </span>
               </div>
               <button
@@ -204,12 +283,28 @@ export default function CheckoutModal() {
               </button>
             </div>
 
-            <h3 className="text-xl sm:text-2xl font-black text-white mb-1">
-              Pay {BOOK_PRICE.display} via UPI
-            </h3>
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="text-xl sm:text-2xl font-black text-white">
+                Pay {BOOK_PRICE.display} via UPI
+              </h3>
+              
+              {/* YouPI Session Countdown Timer */}
+              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-950 border border-amber-500/30 text-amber-400 font-mono text-xs font-bold">
+                <Clock className="w-3.5 h-3.5 animate-pulse text-amber-400" />
+                <span>{formattedTime}</span>
+              </div>
+            </div>
+
+            {/* Countdown Progress Bar */}
+            <div className="w-full h-1 bg-slate-800 rounded-full mb-3 overflow-hidden">
+              <div 
+                className={`h-full transition-all duration-1000 ${timeLeft < 60 ? 'bg-rose-500' : 'bg-amber-400'}`} 
+                style={{ width: `${timerPercentage}%` }}
+              />
+            </div>
             
             {/* Delivery destination verification */}
-            <div className="p-2.5 rounded-xl bg-slate-950 border border-slate-800 mb-4 flex items-center justify-between text-xs">
+            <div className="p-2.5 rounded-xl bg-slate-950 border border-slate-800 mb-3 flex items-center justify-between text-xs">
               <span className="text-slate-400">
                 Delivery to WhatsApp: <strong className="text-white font-mono">+91 {whatsappNumber.replace(/\D/g, '')}</strong>
               </span>
@@ -221,39 +316,90 @@ export default function CheckoutModal() {
               </button>
             </div>
 
-            {/* Mobile 1-Tap Pay Button */}
+            {/* Mobile 1-Tap Pay Drawer (YouPI Intent Switcher) */}
             {isMobileDevice() && (
-              <div className="mb-4">
+              <div className="mb-3.5 space-y-2">
                 <button
-                  onClick={handleMobileUpiPay}
+                  onClick={() => handleMobileUpiPay()}
                   className="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-amber-400 via-amber-300 to-yellow-400 text-slate-950 font-black text-sm uppercase tracking-wide shadow-lg shadow-amber-400/20 active:scale-95 transition-all flex items-center justify-center gap-2 cursor-pointer"
                 >
                   <Smartphone className="w-4 h-4 stroke-[2.5]" />
-                  <span>TAP TO PAY {BOOK_PRICE.display} VIA ANY UPI APP</span>
+                  <span>TAP TO PAY {BOOK_PRICE.display} (ANY UPI APP)</span>
                 </button>
-                <p className="text-[11px] text-amber-400/90 text-center font-medium mt-1">
-                  Opens Google Pay, PhonePe, Paytm, or BHIM directly
-                </p>
+                <div className="flex items-center justify-center gap-2 pt-1">
+                  {['Google Pay', 'PhonePe', 'Paytm', 'CRED', 'BHIM'].map((app) => (
+                    <button
+                      key={app}
+                      onClick={() => handleMobileUpiPay()}
+                      className="px-2 py-1 rounded-md bg-slate-950 border border-slate-800 text-[10px] font-semibold text-slate-300 hover:text-white hover:border-slate-700 cursor-pointer"
+                    >
+                      {app}
+                    </button>
+                  ))}
+                </div>
               </div>
             )}
 
-            {/* Clean QR Code Container */}
-            <div className="relative mx-auto max-w-[230px] p-2.5 rounded-2xl bg-white shadow-xl mb-3.5 border-2 border-amber-400/40">
-              <img 
-                src={UPI_SUPPORT.qrImage} 
-                alt="UPI QR Code - Aarush Yadav" 
-                className="w-full h-auto object-contain rounded-xl"
-              />
+            {/* QR View Mode Selector (YouPI Vector SVG vs FamPay Card) */}
+            <div className="flex items-center justify-center gap-2 mb-2.5">
+              <button
+                type="button"
+                onClick={() => setQrMode('vector')}
+                className={`px-3 py-1 rounded-lg text-[11px] font-mono font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                  qrMode === 'vector'
+                    ? 'bg-amber-400 text-slate-950 shadow'
+                    : 'bg-slate-950 text-slate-400 hover:text-white border border-slate-800'
+                }`}
+              >
+                <QrCode className="w-3.5 h-3.5" />
+                <span>Dynamic Vector QR</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setQrMode('card')}
+                className={`px-3 py-1 rounded-lg text-[11px] font-mono font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                  qrMode === 'card'
+                    ? 'bg-amber-400 text-slate-950 shadow'
+                    : 'bg-slate-950 text-slate-400 hover:text-white border border-slate-800'
+                }`}
+              >
+                <span>FamPay Card QR</span>
+              </button>
+            </div>
+
+            {/* QR Code Container */}
+            <div className="relative mx-auto max-w-[230px] p-3 rounded-2xl bg-white shadow-xl mb-3 border-2 border-amber-400/40 flex flex-col items-center justify-center min-h-[220px]">
+              {qrMode === 'vector' ? (
+                <div className="flex flex-col items-center">
+                  <QRCodeSVG 
+                    value={dynamicUpiUri}
+                    size={190}
+                    level="Q"
+                    bgColor="#ffffff"
+                    fgColor="#020617"
+                    includeMargin={false}
+                  />
+                  <div className="mt-1.5 flex items-center gap-1 text-[10px] font-mono font-bold text-slate-700 uppercase tracking-wider">
+                    <span>Scan with Any UPI App</span>
+                  </div>
+                </div>
+              ) : (
+                <img 
+                  src={UPI_SUPPORT.qrImage} 
+                  alt={`UPI QR Code - ${YOUPI_CONFIG.payeeName}`} 
+                  className="w-full h-auto object-contain rounded-xl"
+                />
+              )}
             </div>
 
             {/* Payee Info & Copy UPI ID */}
-            <div className="bg-slate-950 rounded-xl p-3 border border-slate-800 mb-4 flex items-center justify-between gap-2">
+            <div className="bg-slate-950 rounded-xl p-3 border border-slate-800 mb-3 flex items-center justify-between gap-2">
               <div className="overflow-hidden">
                 <span className="text-[10px] font-mono uppercase tracking-wider text-slate-400 block">
-                  Payee: {UPI_SUPPORT.name}
+                  Payee: {YOUPI_CONFIG.payeeName}
                 </span>
                 <span className="font-mono text-xs sm:text-sm font-bold text-amber-400 truncate block">
-                  {UPI_SUPPORT.upiId}
+                  {YOUPI_CONFIG.merchantVpa}
                 </span>
               </div>
               <button
@@ -276,6 +422,21 @@ export default function CheckoutModal() {
                   </>
                 )}
               </button>
+            </div>
+
+            {/* Optional UTR / Reference Number Input (YouPI Observer reconciliation) */}
+            <div className="mb-3">
+              <label className="block text-[11px] font-mono uppercase tracking-wider text-slate-400 mb-1">
+                UPI Reference No. / 12-Digit UTR <span className="text-slate-500 lowercase">(optional)</span>
+              </label>
+              <input
+                type="text"
+                value={utrNumber}
+                onChange={(e) => setUtrNumber(e.target.value)}
+                placeholder="e.g. 4289XXXXXXXX (shown in GPay/PhonePe receipt)"
+                maxLength={20}
+                className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs font-mono placeholder-slate-600 focus:outline-none focus:border-amber-400"
+              />
             </div>
 
             {/* THE REQUESTED "CLICK HERE WHEN PAYMENT DONE" BUTTON */}
@@ -315,6 +476,12 @@ export default function CheckoutModal() {
                   Your PDF should be available within 24 hours on your WhatsApp: <span className="text-amber-400 font-mono">+91 {cleanPhone}</span>.
                 </p>
               </div>
+
+              {utrNumber.trim() && (
+                <div className="p-2 rounded-lg bg-slate-900 border border-slate-800 text-xs text-slate-300 font-mono">
+                  Submitted UTR: <span className="text-emerald-400 font-bold">{utrNumber.trim()}</span>
+                </div>
+              )}
 
               <div className="pt-2.5 border-t border-slate-800/80 text-xs text-slate-300 leading-relaxed">
                 If not, contact us via:
