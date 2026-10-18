@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { ArrowRight, Send, ShieldAlert, Clock, Check } from 'lucide-react';
-import { PAYMENT_URL, RESPONSE_TIME } from '../config';
+import { PAYMENT_URL, RESPONSE_TIME, BOOK_PRICE } from '../config';
 import { buyNow } from '../utils/buy';
 
 export default function CTAButton({ 
@@ -41,7 +41,7 @@ export default function CTAButton({
         rel="noopener noreferrer"
         data-youpi-pay=""
         data-order-id="EBOOK-4HRS"
-        data-amount="59.00"
+        data-amount={BOOK_PRICE.amount.toFixed(2)}
         data-currency="INR"
         data-vpa="aarushydv@fam"
       >

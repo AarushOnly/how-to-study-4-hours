@@ -14,11 +14,11 @@ export const DM_HANDLE = "deepfocusacademy";
  * 59 Rupees one-time payment for the entire 43-page guide + field tools
  */
 export const BOOK_PRICE = {
-  amount: 59,
+  amount: 1,
   currencySymbol: "₹",
-  display: "₹59",
-  label: "Only ₹59",
-  fullText: "₹59 Only (One-Time Payment)"
+  display: "₹1",
+  label: "₹1 (Test Price)",
+  fullText: "₹1 Only (Test Mode • Real Price ₹59)"
 };
 
 // Pre-typed message directly asking for the book
@@ -78,7 +78,7 @@ export const YOUPI_CONFIG = {
   gatewayApiUrl: "https://pay.deepfocusacademy.com",
   merchantVpa: "aarushydv@fam",
   payeeName: "AARUSH YADAV",
-  amount: 59,
+  amount: 1,
   currency: "INR",
   note: "Deep Focus 4 Hours Ebook",
   sessionSeconds: 300, // 5:00 payment countdown
