@@ -14,6 +14,9 @@ import { handleSupportClick } from '../utils/device';
 
 export default function ThankYouPage({ onNavigateHome }) {
   const [isSupportModalOpen, setIsSupportModalOpen] = useState(false);
+  const [whatsapp] = useState(() => {
+    return (typeof window !== 'undefined' && localStorage.getItem('ebook_whatsapp')) || '';
+  });
 
   const handleDownload = (e) => {
     if (!EBOOK_DOWNLOAD_URL || EBOOK_DOWNLOAD_URL === "YOUR_EBOOK_DOWNLOAD_URL_HERE") {
@@ -103,8 +106,14 @@ export default function ThankYouPage({ onNavigateHome }) {
               Your ebook is ready.
             </p>
             <p className="text-slate-300 text-sm sm:text-base max-w-lg mx-auto leading-relaxed">
-              Thank you for your purchase. Click the button below to access your ebook.
+              Thank you for your purchase. Click the button below to download your 43-page guide immediately.
             </p>
+            {whatsapp && (
+              <div className="p-3 rounded-xl bg-slate-900 border border-emerald-500/40 max-w-md mx-auto text-xs text-slate-300 flex items-center justify-center gap-2">
+                <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                <span>PDF also queued for WhatsApp delivery to: <strong className="text-amber-400 font-mono">+91 {whatsapp}</strong> (within 24 hours).</span>
+              </div>
+            )}
           </div>
 
           {/* Primary Download Button */}

@@ -28,20 +28,23 @@ export default function App() {
 
     window.addEventListener('popstate', handleLocationChange);
     window.addEventListener('hashchange', handleLocationChange);
+    window.addEventListener('ebook:navigate-thank-you', handleLocationChange);
     return () => {
       window.removeEventListener('popstate', handleLocationChange);
       window.removeEventListener('hashchange', handleLocationChange);
+      window.removeEventListener('ebook:navigate-thank-you', handleLocationChange);
     };
   }, []);
 
   const navigateToThankYou = () => {
-    window.history.pushState({}, '', '/thank-you');
+    window.location.hash = 'thank-you';
     setCurrentPage('thank-you');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const navigateToHome = () => {
-    window.history.pushState({}, '', '/');
+    window.location.hash = '';
+    window.history.pushState({}, '', window.location.pathname);
     setCurrentPage('sales');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -49,7 +52,7 @@ export default function App() {
   return (
     <div className="bg-slate-950 min-h-screen text-slate-100 font-sans">
       <ToastNotification />
-      <CheckoutModal />
+      <CheckoutModal onNavigateThankYou={navigateToThankYou} />
       {currentPage === 'thank-you' ? (
         <ThankYouPage onNavigateHome={navigateToHome} />
       ) : (
